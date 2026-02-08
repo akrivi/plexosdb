@@ -3627,9 +3627,29 @@ class PlexosDB:
         ['Generator1', 'Generator2']
         """
         class_id = self.get_class_id(class_enum)
-        query = f"SELECT name from {Schema.Objects.name} WHERE class_id = ?"
-        result = self._db.query(query, (class_id,))
-        return [d[0] for d in result]
+
+        if category is None:
+            query = f"SELECT name FROM {Schema.Objects.name} WHERE class_id = ? ORDER BY name"
+            params = (class_id,)
+        else:
+            if not self.check_category_exists(class_enum, category):
+                msg = f"Category '{category}' does not exist for class {class_enum}."
+                raise NotFoundError(msg)
+
+            query = f"""
+            SELECT obj.name
+            FROM {Schema.Objects.name} AS obj
+            JOIN {Schema.Categories.name} AS cat
+                ON obj.category_id = cat.category_id
+            WHERE obj.class_id = ?
+            AND cat.name = ?
+            ORDER BY obj.name
+            """
+            params = (class_id, category)
+
+        result = self._db.query(query, params)
+        assert result is not None
+        return [row[0] for row in result]
 
     def list_parent_objects(
         self,
