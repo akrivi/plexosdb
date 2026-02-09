@@ -8,13 +8,22 @@ from importlib.resources import files
 from pathlib import Path
 from string import Template
 from typing import Any, Literal, TypedDict, cast
+from collections.abc import Sequence
 import warnings
 
 from loguru import logger
 
 from .checks import check_memberships_from_records
 from .db_manager import SQLiteManager
-from .enums import ClassEnum, CollectionEnum, Schema, get_default_collection, str2enum, parse_class_enum, parse_collection_enum
+from .enums import (
+    ClassEnum,
+    CollectionEnum,
+    Schema,
+    get_default_collection,
+    str2enum,
+    parse_class_enum,
+    parse_collection_enum,
+)
 from .exceptions import (
     NameError,
     NoPropertiesError,
@@ -1867,7 +1876,7 @@ class PlexosDB:
             parent_name = membership["parent_name"]
             child_name = membership["child_name"]
             parent_class = parse_class_enum(membership["parent_class_name"])
-            child_class  = parse_class_enum(membership["child_class_name"])
+            child_class = parse_class_enum(membership["child_class_name"])
             collection = parse_collection_enum(membership["collection_name"])
 
             if child_class == object_class and child_name == original_name:
@@ -3655,6 +3664,7 @@ class PlexosDB:
         """
         class_id = self.get_class_id(class_enum)
 
+        params: Sequence[Any]
         if category is None:
             query = f"SELECT name FROM {Schema.Objects.name} WHERE class_id = ? ORDER BY name"
             params = (class_id,)

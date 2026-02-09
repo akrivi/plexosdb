@@ -169,18 +169,22 @@ def _parse_str_enum(enum_cls: type[Enum], value: str | Enum) -> Enum:
         if e.value == value:
             return e
 
-    # Enum name without spaces 
-    key = value.replace(" ", "")
-    try:
-        return enum_cls[key]
-    except KeyError:
+    # Enum name without spaces
+    if isinstance(value, str):
+        key = value.replace(" ", "")
+        try:
+            return enum_cls[key]
+        except KeyError:
+            raise ValueError(f"{value!r} is not a valid {enum_cls.__name__}")
+    else:
         raise ValueError(f"{value!r} is not a valid {enum_cls.__name__}")
-    
+
+
 def parse_class_enum(value: str | ClassEnum) -> ClassEnum:
-    return _parse_str_enum(ClassEnum, value) 
+    """Parse a string or ClassEnum to a ClassEnum instance."""
+    return cast(ClassEnum, _parse_str_enum(ClassEnum, value))
 
 
 def parse_collection_enum(value: str | CollectionEnum) -> CollectionEnum:
-    return _parse_str_enum(CollectionEnum, value) 
-
-
+    """Parse a string or CollectionEnum to a CollectionEnum instance."""
+    return cast(CollectionEnum, _parse_str_enum(CollectionEnum, value))
